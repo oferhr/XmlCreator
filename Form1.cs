@@ -227,9 +227,6 @@ namespace XmlCreator
                                     writer.WriteString(stickdate);
                                     writer.WriteEndElement();
                                 }
-                                writer.WriteStartElement("LastName");
-                                writer.WriteString(LastName);
-                                writer.WriteEndElement();
                                 writer.WriteStartElement("KodGimla");
                                 writer.WriteEndElement();
                                 writer.WriteStartElement("vasarDate");
@@ -271,7 +268,7 @@ namespace XmlCreator
                 Directory.CreateDirectory(dest);
                 foreach (var file in list)
                 {
-                    File.Move(file, Path.Combine(dest, Path.GetFileName(file)));
+                    File.Copy(file, Path.Combine(dest, Path.GetFileName(file)));
                 }
                 MessageBox.Show("הפעולה הסתיימה בהצלחה. " + rowCounter + " מתוך " + (lastRow - 1) + " נקלטו ");
             }
