@@ -68,9 +68,9 @@
             this.lbl1.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.lbl1.Location = new System.Drawing.Point(662, 26);
             this.lbl1.Name = "lbl1";
-            this.lbl1.Size = new System.Drawing.Size(95, 19);
+            this.lbl1.Size = new System.Drawing.Size(79, 19);
             this.lbl1.TabIndex = 8;
-            this.lbl1.Text = "תקייה ראשית";
+            this.lbl1.Text = "קובץ אקסל";
             // 
             // btnStart
             // 

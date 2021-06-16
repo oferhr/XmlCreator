@@ -103,165 +103,170 @@ namespace XmlCreator
                         {
                             continue;
                         }
-                        for (var XmlCounter = 1; XmlCounter <= 2; XmlCounter++)
+                        //var XmlCounter = 1
+                        //for (var XmlCounter = 1; XmlCounter <= 2; XmlCounter++)
+                        //{
+                        var clientFile = xlWorksheet.Range["A" + i, "A" + i].Value2.ToString();
+                        var letter = xlWorksheet.Range["B" + i, "B" + i].Value2.ToString();
+                        //var OrderCompanyID = clientFile + letter + XmlCounter;
+                        var OrderCompanyID = clientFile + letter;
+                        var FirstName = xlWorksheet.Range["C" + i, "C" + i].Value2.ToString();
+                        var LastName = xlWorksheet.Range["D" + i, "D" + i].Value2.ToString();
+                        id = xlWorksheet.Range["E" + i, "E" + i].Value2.ToString();
+                        var tickDate = xlWorksheet.Range["F" + i, "F" + i].Value2?.ToString();
+
+
+                        vsrname = CreateName(OrderCompanyID, id, "pdf", NameType.PDF_VSR);
+                        var yipname = CreateName(OrderCompanyID, id, "pdf", NameType.PD_YIP);
+                        var xmlname = CreateName(OrderCompanyID, id, "xml", NameType.XML);
+                        //var type = XmlCounter == 1 ? "201" : "205";
+                        var type = "201";
+                        string stickdate = null;
+                        if (!string.IsNullOrEmpty(tickDate))
                         {
-                            var clientFile = xlWorksheet.Range["A" + i, "A" + i].Value2.ToString();
-                            var letter = xlWorksheet.Range["B" + i, "B" + i].Value2.ToString();
-                            var OrderCompanyID = clientFile + letter + XmlCounter;
-                            var FirstName = xlWorksheet.Range["C" + i, "C" + i].Value2.ToString();
-                            var LastName = xlWorksheet.Range["D" + i, "D" + i].Value2.ToString();
-                            id = xlWorksheet.Range["E" + i, "E" + i].Value2.ToString();
-                            var tickDate = xlWorksheet.Range["F" + i, "F" + i].Value2?.ToString();
+                            var dblTd = double.Parse(tickDate);
+                            stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm");
+                        }
 
 
-                            vsrname = CreateName(OrderCompanyID, id, "pdf", NameType.PDF_VSR);
-                            var yipname = CreateName(OrderCompanyID, id, "pdf", NameType.PD_YIP);
-                            var xmlname = CreateName(OrderCompanyID, id, "xml", NameType.XML);
-                            var type = XmlCounter == 1 ? "201" : "205";
-                            string stickdate = null;
-                            if (!string.IsNullOrEmpty(tickDate))
+
+                        var pdvsr = Code_Vsr + "_" + id;
+                        var pdyip = id + "_" + Code_Yip;
+                        var vsrpath = string.Empty;
+                        var yippath = string.Empty;
+                        var newVsrPath = string.Empty;
+                        var newYipPath = string.Empty;
+
+                        string[] files = Directory.GetFiles(archivePath);
+                        foreach (var file in files)
+                        {
+                            var nm = Path.GetFileNameWithoutExtension(file);
+                            if (nm.Contains(pdvsr))
                             {
-                                var dblTd = double.Parse(tickDate);
-                                stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm");
+                                vsrpath = file;
                             }
 
-
-
-                            var pdvsr = Code_Vsr + "_" + id;
-                            var pdyip = id + "_" + Code_Yip;
-                            var vsrpath = string.Empty;
-                            var yippath = string.Empty;
-                            var newVsrPath = string.Empty;
-                            var newYipPath = string.Empty;
-
-                            string[] files = Directory.GetFiles(archivePath);
-                            foreach (var file in files)
+                            var parts = nm.Split('_');
+                            if (Array.Exists(parts, f => f == Code_Yip) && Array.Exists(parts, f => f == id))
                             {
-                                var nm = Path.GetFileNameWithoutExtension(file);
-                                if (nm.Contains(pdvsr))
-                                {
-                                    vsrpath = file;
-                                }
-
-                                var parts = nm.Split('_');
-                                if (Array.Exists(parts, f => f == Code_Yip) && Array.Exists(parts, f => f == id))
-                                {
-                                    yippath = file;
-                                }
+                                yippath = file;
                             }
-                            if (File.Exists(vsrpath) && File.Exists(yippath))
+                        }
+                        if (File.Exists(vsrpath) && File.Exists(yippath))
+                        {
+                            newVsrPath = Path.Combine(archivePath, vsrname);
+                            newYipPath = Path.Combine(archivePath, yipname);
+                            File.Copy(vsrpath, newVsrPath);
+                            File.Copy(yippath, newYipPath);
+                            //if (XmlCounter == 2)
+                            //{
+                            //    File.Delete(vsrpath);
+                            //    File.Delete(yippath);
+                            //}
+                            File.Delete(vsrpath);
+                            File.Delete(yippath);
+                        }
+                        else
+                        {
+                            lblRow.Text = (i - 1).ToString();
+                            System.Windows.Forms.Application.DoEvents();
+                            if (!File.Exists(vsrpath))
                             {
-                                newVsrPath = Path.Combine(archivePath, vsrname);
-                                newYipPath = Path.Combine(archivePath, yipname);
-                                File.Copy(vsrpath, newVsrPath);
-                                File.Copy(yippath, newYipPath);
-                                if (XmlCounter == 2)
-                                {
-                                    File.Delete(vsrpath);
-                                    File.Delete(yippath);
-                                }
+                                throw (new Exception("קובץ וסר לא קיים" + " --- " + "שורה" + "  " + i));
                             }
-                            else
+                            if (!File.Exists(yippath))
                             {
-                                lblRow.Text = (i-1).ToString();
-                                System.Windows.Forms.Application.DoEvents();
-                                if (!File.Exists(vsrpath))
-                                {
-                                    throw(new Exception("קובץ וסר לא קיים" + " --- " + "שורה" + "  " + i));
-                                }
-                                if (!File.Exists(yippath))
-                                {
-                                    throw (new Exception("קובץ יפוי כח לא קיים" + " --- " + "שורה" + "  " + i));
-                                }
-                                
+                                throw (new Exception("קובץ יפוי כח לא קיים" + " --- " + "שורה" + "  " + i));
                             }
-                            id = id.PadLeft(9, '0');
-                            var sts = new XmlWriterSettings()
-                            {
-                                Indent = true
-                            };
-
-                            using (var writer = XmlWriter.Create(Path.Combine(archivePath, xmlname), sts))
-                            {
-                                writer.WriteStartDocument();
-                                writer.WriteStartElement("ActivityData");
-                                writer.WriteStartElement("SPDataSetResults");
-                                writer.WriteStartElement("SystemID");
-                                writer.WriteString("2");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("SystemName");
-                                writer.WriteString("חברות הביטוח");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("CompanyID");
-                                writer.WriteString("5");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("CompanyName");
-                                writer.WriteString("ערן מור");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("Interface");
-                                writer.WriteString(type);
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("ServiceID");
-                                writer.WriteString("10");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("OrderBtlID");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("OrderCompanyID");
-                                writer.WriteString(OrderCompanyID);
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("TimeStamp");
-                                writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm"));
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("Zehut");
-                                writer.WriteString(id);
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("FirstName");
-                                writer.WriteString(FirstName);
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("LastName");
-                                writer.WriteString(LastName);
-                                writer.WriteEndElement();
-                                if (!string.IsNullOrEmpty(stickdate))
-                                {
-                                    writer.WriteStartElement("TikDate");
-                                    writer.WriteString(stickdate);
-                                    writer.WriteEndElement();
-                                }
-                                writer.WriteStartElement("KodGimla");
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("vasarDate");
-                                //writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss"));
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("attachmentFile");
-                                writer.WriteStartElement("FileName");
-                                writer.WriteString(vsrname);
-                                writer.WriteEndElement();
-                                writer.WriteEndElement();
-                                writer.WriteStartElement("attachmentFile");
-                                writer.WriteStartElement("FileName");
-                                writer.WriteString(yipname);
-                                writer.WriteEndElement();
-                                writer.WriteEndElement();
-                                writer.WriteEndElement();
-                                writer.WriteEndElement();
-
-                            }
-
-
-                            list.Add(newVsrPath);
-                            list.Add(newYipPath);
-                            list.Add(Path.Combine(archivePath, xmlname));
-
 
                         }
+                        id = id.PadLeft(9, '0');
+                        var sts = new XmlWriterSettings()
+                        {
+                            Indent = true
+                        };
+
+                        using (var writer = XmlWriter.Create(Path.Combine(archivePath, xmlname), sts))
+                        {
+                            writer.WriteStartDocument();
+                            writer.WriteStartElement("ActivityData");
+                            writer.WriteStartElement("SPDataSetResults");
+                            writer.WriteStartElement("SystemID");
+                            writer.WriteString("2");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("SystemName");
+                            writer.WriteString("חברות הביטוח");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("CompanyID");
+                            writer.WriteString("5");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("CompanyName");
+                            writer.WriteString("ערן מור");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("Interface");
+                            writer.WriteString(type);
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("ServiceID");
+                            writer.WriteString("10");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("OrderBtlID");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("OrderCompanyID");
+                            writer.WriteString(OrderCompanyID);
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("TimeStamp");
+                            writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm"));
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("Zehut");
+                            writer.WriteString(id);
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("FirstName");
+                            writer.WriteString(FirstName);
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("LastName");
+                            writer.WriteString(LastName);
+                            writer.WriteEndElement();
+                            if (!string.IsNullOrEmpty(stickdate))
+                            {
+                                writer.WriteStartElement("TikDate");
+                                writer.WriteString(stickdate);
+                                writer.WriteEndElement();
+                            }
+                            writer.WriteStartElement("KodGimla");
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("vasarDate");
+                            //writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss"));
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("attachmentFile");
+                            writer.WriteStartElement("FileName");
+                            writer.WriteString(vsrname);
+                            writer.WriteEndElement();
+                            writer.WriteEndElement();
+                            writer.WriteStartElement("attachmentFile");
+                            writer.WriteStartElement("FileName");
+                            writer.WriteString(yipname);
+                            writer.WriteEndElement();
+                            writer.WriteEndElement();
+                            writer.WriteEndElement();
+                            writer.WriteEndElement();
+
+                        }
+
+
+                        list.Add(newVsrPath);
+                        list.Add(newYipPath);
+                        list.Add(Path.Combine(archivePath, xmlname));
+
+
+                        // }
                         rowCounter++;
-                        lblRow.Text = (i-1).ToString();
+                        lblRow.Text = (i - 1).ToString();
                         System.Windows.Forms.Application.DoEvents();
                     }
                     catch (Exception ex)
                     {
 
-                        SimpleLogger.SimpleLog.Log(ex); 
+                        SimpleLogger.SimpleLog.Log(ex);
                     }
                 }
                 var dest = Path.Combine(txtDest.Text, dirName);
