@@ -114,20 +114,20 @@ namespace XmlCreator
                         var LastName = xlWorksheet.Range["D" + i, "D" + i].Value2.ToString();
                         id = xlWorksheet.Range["E" + i, "E" + i].Value2.ToString();
                         var tickDate = xlWorksheet.Range["F" + i, "F" + i].Value2?.ToString();
-
+                        var newType = xlWorksheet.Range["G" + i, "G" + i].Value2?.ToString();
 
                         vsrname = CreateName(OrderCompanyID, id, "pdf", NameType.PDF_VSR);
                         var yipname = CreateName(OrderCompanyID, id, "pdf", NameType.PD_YIP);
                         var xmlname = CreateName(OrderCompanyID, id, "xml", NameType.XML);
                         //var type = XmlCounter == 1 ? "201" : "205";
                         var type = "201";
-                        string stickdate = null;
+                        string stickdate = "1900-01-01T00:00:00";
                         if (!string.IsNullOrEmpty(tickDate))
                         {
                             var dblTd = double.Parse(tickDate);
                             stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm");
                         }
-
+                        
 
 
                         var pdvsr = Code_Vsr + "_" + id;
@@ -204,7 +204,7 @@ namespace XmlCreator
                             writer.WriteString("ערן מור");
                             writer.WriteEndElement();
                             writer.WriteStartElement("Interface");
-                            writer.WriteString(type);
+                            writer.WriteString(newType);
                             writer.WriteEndElement();
                             writer.WriteStartElement("ServiceID");
                             writer.WriteString("10");
@@ -235,7 +235,7 @@ namespace XmlCreator
                             writer.WriteStartElement("KodGimla");
                             writer.WriteEndElement();
                             writer.WriteStartElement("vasarDate");
-                            //writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss"));
+                            writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddT00\\:00\\:00"));
                             writer.WriteEndElement();
                             writer.WriteStartElement("attachmentFile");
                             writer.WriteStartElement("FileName");
