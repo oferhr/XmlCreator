@@ -26,6 +26,7 @@ namespace XmlCreator
         }
         private string Code_Vsr = string.Empty;
         private string Code_Yip = string.Empty;
+        private string BLL_CODES = string.Empty;
         public Form1()
         {
             InitializeComponent();
@@ -47,6 +48,9 @@ namespace XmlCreator
             }
             Code_Vsr = ConfigurationManager.AppSettings.Get("Code_Vsr");
             Code_Yip = ConfigurationManager.AppSettings.Get("Code_Yip");
+            BLL_CODES = ConfigurationManager.AppSettings.Get("BllCodes");
+
+
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -63,7 +67,70 @@ namespace XmlCreator
                 }
             }
         }
+        private List<Codes> GetCodes()
+        {
+            var lst = new List<Codes>();
+            
 
+            if (string.IsNullOrEmpty(BLL_CODES))
+            {
+                throw new Exception("קודים של ביטוח לאומי לא הוכנסו כראוי");
+            }
+            var xlApp = new Excel.Application();
+            Excel.Workbook xlWorkbook = null;
+            Excel._Worksheet xlWorksheet = null;
+            Excel.Range xlRange = null;
+            try
+            {
+                xlWorkbook = xlApp.Workbooks.Open(BLL_CODES);
+                xlApp.Visible = false;
+                xlWorksheet = (Excel._Worksheet)xlWorkbook.Sheets[1];
+                var lastRow = xlWorksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing).Row;
+                for (int i = 2; i <= lastRow; i++)
+                {
+                    var gid = xlWorksheet.Range["A" + i, "A" + i].Value2.ToString();
+                    var gtype = xlWorksheet.Range["C" + i, "C" + i].Value2.ToString();
+                    lst.Add(new Codes { id = gid, type = gtype });
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                SimpleLogger.SimpleLog.Log(ex);
+                
+            }
+            finally
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                //rule of thumb for releasing com objects:
+                //  never use two dots, all COM objects must be referenced and released individually
+                //  ex: [somthing].[something].[something] is bad
+
+                //release com objects to fully kill excel process from running in the background
+                if (xlRange != null)
+                    Marshal.ReleaseComObject(xlRange);
+                if (xlWorksheet != null)
+                    Marshal.ReleaseComObject(xlWorksheet);
+
+                //close and release
+                if (xlWorksheet != null)
+                {
+                    xlWorkbook.Close();
+                    Marshal.ReleaseComObject(xlWorkbook);
+                }
+
+                if (xlApp != null)
+                {
+                    //quit and release
+                    xlApp.Quit();
+                    Marshal.ReleaseComObject(xlApp);
+                }
+
+            }
+            return lst;
+        }
         private void btnStart_Click(object sender, EventArgs e)
         {
             var dirName = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -77,6 +144,8 @@ namespace XmlCreator
         private void ParseExcel(string archivePath, string excelPath, string dirName)
         {
             var list = new List<string>();
+            var dels = new List<string>();
+            var codes = GetCodes();
             var rowCounter = 0;
             var xlApp = new Excel.Application();
             Excel.Workbook xlWorkbook = null;
@@ -114,18 +183,30 @@ namespace XmlCreator
                         var LastName = xlWorksheet.Range["D" + i, "D" + i].Value2.ToString();
                         id = xlWorksheet.Range["E" + i, "E" + i].Value2.ToString();
                         var tickDate = xlWorksheet.Range["F" + i, "F" + i].Value2?.ToString();
-                        var newType = xlWorksheet.Range["G" + i, "G" + i].Value2?.ToString();
+                        var code = xlWorksheet.Range["G" + i, "G" + i].Value2?.ToString();
+                        var newType = xlWorksheet.Range["H" + i, "H" + i].Value2?.ToString();
 
                         vsrname = CreateName(OrderCompanyID, id, "pdf", NameType.PDF_VSR);
                         var yipname = CreateName(OrderCompanyID, id, "pdf", NameType.PD_YIP);
                         var xmlname = CreateName(OrderCompanyID, id, "xml", NameType.XML);
+
+                        var typecode = codes.Find(f => f.type == code).id;
+                        
                         //var type = XmlCounter == 1 ? "201" : "205";
-                        var type = "201";
-                        string stickdate = "1900-01-01T00:00:00";
+                       // var type = "201";
+                        string stickdate = "";
                         if (!string.IsNullOrEmpty(tickDate))
                         {
-                            var dblTd = double.Parse(tickDate);
-                            stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm");
+                            if (tickDate.Contains("1900"))
+                            {
+                                stickdate = "1900-01-01T00:00:00";
+                            }
+                            else
+                            {
+                                var dblTd = double.Parse(tickDate);
+                                stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm");
+                            }
+                            
                         }
                         
 
@@ -163,8 +244,10 @@ namespace XmlCreator
                             //    File.Delete(vsrpath);
                             //    File.Delete(yippath);
                             //}
-                            File.Delete(vsrpath);
-                            File.Delete(yippath);
+                            //File.Delete(vsrpath);
+                            //File.Delete(yippath);
+                            dels.Add(vsrpath);
+                            dels.Add(yippath);
                         }
                         else
                         {
@@ -232,8 +315,17 @@ namespace XmlCreator
                                 writer.WriteString(stickdate);
                                 writer.WriteEndElement();
                             }
-                            writer.WriteStartElement("KodGimla");
-                            writer.WriteEndElement();
+                            if(newType == "201")
+                            {
+                                writer.WriteStartElement("KodGimla");
+                                writer.WriteEndElement();
+                            }
+                            else
+                            {
+                                writer.WriteStartElement("KodGimla");
+                                writer.WriteString(typecode);
+                                writer.WriteEndElement();
+                            }
                             writer.WriteStartElement("vasarDate");
                             writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddT00\\:00\\:00"));
                             writer.WriteEndElement();
@@ -269,6 +361,17 @@ namespace XmlCreator
                         SimpleLogger.SimpleLog.Log(ex);
                     }
                 }
+
+                foreach (var item in dels)
+                {
+                    if (File.Exists(item))
+                    {
+                        File.Delete(item);
+                    }
+                }
+                //dfdfsdffadfa
+
+
                 var dest = Path.Combine(txtDest.Text, dirName);
                 Directory.CreateDirectory(dest);
                 foreach (var file in list)
@@ -352,5 +455,10 @@ namespace XmlCreator
         {
             this.Close();
         }
+    }
+    public class Codes
+    {
+        public string id { get; set; }
+        public string type { get; set; }
     }
 }
