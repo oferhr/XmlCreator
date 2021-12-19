@@ -76,6 +76,10 @@ namespace XmlCreator
             {
                 throw new Exception("קודים של ביטוח לאומי לא הוכנסו כראוי");
             }
+            if (!File.Exists(BLL_CODES))
+            {
+                throw new Exception("קובץ קודים ביטוח לאומי לא נמצא ");
+            }
             var xlApp = new Excel.Application();
             Excel.Workbook xlWorkbook = null;
             Excel._Worksheet xlWorksheet = null;
@@ -146,6 +150,10 @@ namespace XmlCreator
             var list = new List<string>();
             var dels = new List<string>();
             var codes = GetCodes();
+            if(codes.Count() == 0)
+            {
+                throw new Exception("קודים של ביטוח לאומי לא נקלטו כראוי");
+            }
             var rowCounter = 0;
             var xlApp = new Excel.Application();
             Excel.Workbook xlWorkbook = null;
