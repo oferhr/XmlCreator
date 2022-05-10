@@ -25,6 +25,7 @@ namespace XmlCreator
             PD_YIP
         }
         private string Code_Vsr = string.Empty;
+        private string Code2_Vsr = string.Empty;
         private string Code_Yip = string.Empty;
         private string BLL_CODES = string.Empty;
         public Form1()
@@ -47,6 +48,7 @@ namespace XmlCreator
                 txtArchive.Text = diraPath;
             }
             Code_Vsr = ConfigurationManager.AppSettings.Get("Code_Vsr");
+            Code2_Vsr = ConfigurationManager.AppSettings.Get("Code2_Vsr");
             Code_Yip = ConfigurationManager.AppSettings.Get("Code_Yip");
             BLL_CODES = ConfigurationManager.AppSettings.Get("BllCodes");
 
@@ -220,6 +222,7 @@ namespace XmlCreator
 
 
                         var pdvsr = Code_Vsr + "_" + id;
+                        var pdvsr2 = Code2_Vsr + "_" + id;
                         var pdyip = id + "_" + Code_Yip;
                         var vsrpath = string.Empty;
                         var yippath = string.Empty;
@@ -230,7 +233,7 @@ namespace XmlCreator
                         foreach (var file in files)
                         {
                             var nm = Path.GetFileNameWithoutExtension(file);
-                            if (nm.Contains(pdvsr))
+                            if (nm.Contains(pdvsr) || nm.Contains(pdvsr2))
                             {
                                 vsrpath = file;
                             }
