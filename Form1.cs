@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Configuration;
+using Spire.Pdf;
 
 namespace XmlCreator
 {
@@ -200,7 +201,7 @@ namespace XmlCreator
                         var yipname = CreateName(OrderCompanyID, id, "pdf", NameType.PD_YIP);
                         var xmlname = CreateName(OrderCompanyID, id, "xml", NameType.XML);
 
-                        var typecode = codes.Find(f => f.type == code).id;
+                        var typecode = codes.Find(f => f.type == code)?.id;
                         
                         //var type = XmlCounter == 1 ? "201" : "205";
                        // var type = "201";
@@ -387,7 +388,23 @@ namespace XmlCreator
                 Directory.CreateDirectory(dest);
                 foreach (var file in list)
                 {
-                    File.Copy(file, Path.Combine(dest, Path.GetFileName(file)));
+                    if (file.Contains("YIP"))
+                    {
+                        using (PdfDocument sourceDoc = new PdfDocument(file))
+                        {
+                            using (PdfDocument newDoc = new PdfDocument())
+                            {
+                                newDoc.InsertPage(sourceDoc, sourceDoc.Pages.Count - 1);
+                                newDoc.SaveToFile(Path.Combine(dest, Path.GetFileName(file)));
+                            }
+                        }
+                            
+                    }
+                    else
+                    {
+                        File.Copy(file, Path.Combine(dest, Path.GetFileName(file)));
+                    }
+                    
                 }
                 MessageBox.Show("הפעולה הסתיימה בהצלחה. " + rowCounter + " מתוך " + (lastRow - 1) + " נקלטו ");
             }
