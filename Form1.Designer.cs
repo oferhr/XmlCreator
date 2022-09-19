@@ -43,6 +43,8 @@
             this.lblRow = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.lblOf = new System.Windows.Forms.Label();
+            this.lblMsg = new System.Windows.Forms.Label();
+            this.lblMsgPdfError = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnBrowse
@@ -152,7 +154,7 @@
             this.label3.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.label3.Location = new System.Drawing.Point(88, 193);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(118, 16);
+            this.label3.Size = new System.Drawing.Size(117, 16);
             this.label3.TabIndex = 19;
             this.label3.Text = "Working on row";
             // 
@@ -162,7 +164,7 @@
             this.lblRow.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.lblRow.Location = new System.Drawing.Point(212, 193);
             this.lblRow.Name = "lblRow";
-            this.lblRow.Size = new System.Drawing.Size(16, 16);
+            this.lblRow.Size = new System.Drawing.Size(15, 16);
             this.lblRow.TabIndex = 20;
             this.lblRow.Text = "x";
             // 
@@ -172,7 +174,7 @@
             this.label5.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.label5.Location = new System.Drawing.Point(247, 193);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(24, 16);
+            this.label5.Size = new System.Drawing.Size(23, 16);
             this.label5.TabIndex = 21;
             this.label5.Text = "Of";
             // 
@@ -182,15 +184,35 @@
             this.lblOf.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.lblOf.Location = new System.Drawing.Point(294, 193);
             this.lblOf.Name = "lblOf";
-            this.lblOf.Size = new System.Drawing.Size(16, 16);
+            this.lblOf.Size = new System.Drawing.Size(15, 16);
             this.lblOf.TabIndex = 22;
             this.lblOf.Text = "x";
+            // 
+            // lblMsg
+            // 
+            this.lblMsg.AutoSize = true;
+            this.lblMsg.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.lblMsg.Location = new System.Drawing.Point(88, 193);
+            this.lblMsg.Name = "lblMsg";
+            this.lblMsg.Size = new System.Drawing.Size(0, 16);
+            this.lblMsg.TabIndex = 23;
+            // 
+            // lblMsgPdfError
+            // 
+            this.lblMsgPdfError.AutoSize = true;
+            this.lblMsgPdfError.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.lblMsgPdfError.Location = new System.Drawing.Point(97, 291);
+            this.lblMsgPdfError.Name = "lblMsgPdfError";
+            this.lblMsgPdfError.Size = new System.Drawing.Size(0, 16);
+            this.lblMsgPdfError.TabIndex = 24;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.lblMsgPdfError);
+            this.Controls.Add(this.lblMsg);
             this.Controls.Add(this.lblOf);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.lblRow);
@@ -230,6 +252,8 @@
         private System.Windows.Forms.Label lblRow;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label lblOf;
+        private System.Windows.Forms.Label lblMsg;
+        private System.Windows.Forms.Label lblMsgPdfError;
     }
 }
 
