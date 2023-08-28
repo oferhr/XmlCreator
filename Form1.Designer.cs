@@ -45,6 +45,8 @@
             this.lblOf = new System.Windows.Forms.Label();
             this.lblMsg = new System.Windows.Forms.Label();
             this.lblMsgPdfError = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.SuspendLayout();
             // 
             // btnBrowse
@@ -76,7 +78,7 @@
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(617, 240);
+            this.btnStart.Location = new System.Drawing.Point(607, 312);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(75, 23);
             this.btnStart.TabIndex = 11;
@@ -140,7 +142,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(501, 240);
+            this.button1.Location = new System.Drawing.Point(481, 312);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 18;
@@ -152,7 +154,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label3.Location = new System.Drawing.Point(88, 193);
+            this.label3.Location = new System.Drawing.Point(388, 240);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(117, 16);
             this.label3.TabIndex = 19;
@@ -162,7 +164,7 @@
             // 
             this.lblRow.AutoSize = true;
             this.lblRow.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblRow.Location = new System.Drawing.Point(212, 193);
+            this.lblRow.Location = new System.Drawing.Point(512, 240);
             this.lblRow.Name = "lblRow";
             this.lblRow.Size = new System.Drawing.Size(15, 16);
             this.lblRow.TabIndex = 20;
@@ -172,7 +174,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label5.Location = new System.Drawing.Point(247, 193);
+            this.label5.Location = new System.Drawing.Point(547, 240);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(23, 16);
             this.label5.TabIndex = 21;
@@ -182,7 +184,7 @@
             // 
             this.lblOf.AutoSize = true;
             this.lblOf.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblOf.Location = new System.Drawing.Point(294, 193);
+            this.lblOf.Location = new System.Drawing.Point(594, 240);
             this.lblOf.Name = "lblOf";
             this.lblOf.Size = new System.Drawing.Size(15, 16);
             this.lblOf.TabIndex = 22;
@@ -192,7 +194,7 @@
             // 
             this.lblMsg.AutoSize = true;
             this.lblMsg.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblMsg.Location = new System.Drawing.Point(88, 193);
+            this.lblMsg.Location = new System.Drawing.Point(388, 240);
             this.lblMsg.Name = "lblMsg";
             this.lblMsg.Size = new System.Drawing.Size(0, 16);
             this.lblMsg.TabIndex = 23;
@@ -206,11 +208,31 @@
             this.lblMsgPdfError.Size = new System.Drawing.Size(0, 16);
             this.lblMsgPdfError.TabIndex = 24;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label4.Location = new System.Drawing.Point(668, 178);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(79, 19);
+            this.label4.TabIndex = 25;
+            this.label4.Text = "תאריך מלל";
+            // 
+            // dateTimePicker1
+            // 
+            this.dateTimePicker1.Location = new System.Drawing.Point(356, 176);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(200, 20);
+            this.dateTimePicker1.TabIndex = 26;
+            this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 352);
+            this.Controls.Add(this.dateTimePicker1);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.lblMsgPdfError);
             this.Controls.Add(this.lblMsg);
             this.Controls.Add(this.lblOf);
@@ -254,6 +276,8 @@
         private System.Windows.Forms.Label lblOf;
         private System.Windows.Forms.Label lblMsg;
         private System.Windows.Forms.Label lblMsgPdfError;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
     }
 }
 

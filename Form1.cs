@@ -14,6 +14,9 @@ using System.Xml;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Configuration;
 using Spire.Pdf;
+using System.Drawing.Drawing2D;
+using System.Xml.Linq;
+
 
 namespace XmlCreator
 {
@@ -32,6 +35,8 @@ namespace XmlCreator
 
         private string Code_Gimla_Groups = string.Empty;
         private string Code_Malal_Groups = string.Empty;
+        private string[] Gimlas;
+        private string[] Malals;
         public Form1()
         {
             InitializeComponent();
@@ -55,6 +60,11 @@ namespace XmlCreator
             if (!string.IsNullOrEmpty(diraPath))
             {
                 txtArchive.Text = diraPath;
+            }
+            var datemll = Properties.Settings.Default.DateMLL;
+            if(datemll != DateTime.MinValue)
+            {
+                dateTimePicker1.Value = datemll;
             }
             Code_Vsr = ConfigurationManager.AppSettings.Get("Code_Vsr");
             Code2_Vsr = ConfigurationManager.AppSettings.Get("Code2_Vsr");
@@ -288,69 +298,50 @@ namespace XmlCreator
                 }
             }
         }
+        
         private void ParseExcel(string archivePath, string excelPath, string dirName)
         {
             var list = new List<string>();
             var dels = new List<string>();
-            var Gimlas = Code_Gimla_Groups.Split(',');
-            var Malals = Code_Malal_Groups.Split(',');
-
-            lblMsg.Text = "שומר קודים ביטוח לאומי";
-            System.Windows.Forms.Application.DoEvents();
-            var codes = GetCodes();
-            if(codes.Count() == 0)
-            {
-                throw new Exception("קודים של ביטוח לאומי לא נקלטו כראוי");
-            }
             var rowCounter = 0;
             string vsrname = string.Empty;
             string id = string.Empty;
             int line = -1;
             int counter = 0;
+            Gimlas = Code_Gimla_Groups.Split(',');
+            Malals = Code_Malal_Groups.Split(',');
+
+            UpdateUI("שומר קודים ביטוח לאומי");
+            var codes = GetCodes();
+            if(codes.Count() == 0)
+            {
+                throw new Exception("קודים של ביטוח לאומי לא נקלטו כראוי");
+            }
+            
             try
             {
-                lblMsg.Text = "בודק שורות באקסל. זה יכול לקחת כמה רגעים";
-                System.Windows.Forms.Application.DoEvents();
-
+                UpdateUI("בודק שורות באקסל. זה יכול לקחת כמה רגעים");
+    
                 var lst = ReadExcel(excelPath);
                 if(lst.Count() == 0)
                 {
-                    lblMsg.Text = "בדיקת האקסל נכשלה - בדוק קובץ לוג";
-                    System.Windows.Forms.Application.DoEvents();
+                    UpdateUI("בדיקת האקסל נכשלה - בדוק קובץ לוג");
                     return;
                 }
-                lblMsg.Text = "בדיקת האקסל עברה בהצלחה";
-                System.Windows.Forms.Application.DoEvents();
-                var query = lst.GroupBy(x => new { x.clientFile, x.code, x.newType })
-                    .Select(g => g.OrderByDescending(c => c.tickDate))
-                    .ToList();
-
+                UpdateUI("בדיקת האקסל עברה בהצלחה");
                 
-                var endList = new List<ExcelVals>();
-                foreach (var item in query)
+                var fileList = prepareList(lst);
+                if(fileList == null)
                 {
-                    var ilst = item.ToList();
-                    var gmla = ilst[0].code;
-                    var mll = ilst[0].newType;
-                    if(Gimlas.Contains(gmla) && Malals.Contains(mll))
-                    {
-                        var itm = ilst[0];
-                        ilst = new List<ExcelVals>();
-                        ilst.Add(itm);
-                    }
-                    endList.AddRange(ilst);
-                }
-                lblMsg.Visible = false;
-                lblOf.Visible = true;
-                lblRow.Visible = true;
-                label3.Visible = true;
-                label5.Visible = true;
-                System.Windows.Forms.Application.DoEvents();
-                var lastRow = endList.Count();
+                    UpdateUI("בדיקת קבצים נכשלה - בדוק קובץ לוג");
+                    return;
+                }   
+                updateScreen(true);
+                var lastRow = fileList.Count();
                 lblOf.Text = (lastRow - 1).ToString();
-                lblRow.Text = "0";
-                System.Windows.Forms.Application.DoEvents();
-                foreach (var it in endList)
+                updateCounters(0);
+                
+                foreach (var it in fileList)
                 {
                     try
                     {
@@ -390,7 +381,7 @@ namespace XmlCreator
 
                         var pdvsr = Code_Vsr + "_" + id;
                         var pdvsr2 = Code2_Vsr + "_" + id;
-                        var pdyip = id + "_" + Code_Yip;
+                       // var pdyip = id + "_" + Code_Yip;
                         var vsrpath = string.Empty;
                         var yippath = string.Empty;
                         var newVsrPath = string.Empty;
@@ -430,8 +421,8 @@ namespace XmlCreator
                         }
                         else
                         {
-                            lblRow.Text = (line - 1).ToString();
-                            System.Windows.Forms.Application.DoEvents();
+                            updateCounters(line - 1);
+                            
                             if (!File.Exists(vsrpath))
                             {
                                 throw (new Exception("קובץ וסר לא קיים" + " --- " + "שורה" + "  " + line));
@@ -443,87 +434,8 @@ namespace XmlCreator
 
                         }
 
-                        id = id.PadLeft(9, '0');
-                        var sts = new XmlWriterSettings()
-                        {
-                            Indent = true
-                        };
 
-                        using (var writer = XmlWriter.Create(Path.Combine(archivePath, xmlname), sts))
-                        {
-                            writer.WriteStartDocument();
-                            writer.WriteStartElement("ActivityData");
-                            writer.WriteStartElement("SPDataSetResults");
-                            writer.WriteStartElement("SystemID");
-                            writer.WriteString("2");
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("SystemName");
-                            writer.WriteString("חברות הביטוח");
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("CompanyID");
-                            writer.WriteString("5");
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("CompanyName");
-                            writer.WriteString("ערן מור");
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("Interface");
-                            writer.WriteString(newType);
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("ServiceID");
-                            writer.WriteString("10");
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("OrderBtlID");
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("OrderCompanyID");
-                            writer.WriteString(OrderCompanyID);
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("TimeStamp");
-                            writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm"));
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("Zehut");
-                            writer.WriteString(id);
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("FirstName");
-                            writer.WriteString(FirstName);
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("LastName");
-                            writer.WriteString(LastName);
-                            writer.WriteEndElement();
-                            if (!string.IsNullOrEmpty(stickdate))
-                            {
-                                writer.WriteStartElement("TikDate");
-                                writer.WriteString(stickdate);
-                                writer.WriteEndElement();
-                            }
-                            if (newType == "201")
-                            {
-                                writer.WriteStartElement("KodGimla");
-                                writer.WriteEndElement();
-                            }
-                            else
-                            {
-                                writer.WriteStartElement("KodGimla");
-                                writer.WriteString(typecode);
-                                writer.WriteEndElement();
-                            }
-                            writer.WriteStartElement("vasarDate");
-                            writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddT00\\:00\\:00"));
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("attachmentFile");
-                            writer.WriteStartElement("FileName");
-                            writer.WriteString(vsrname);
-                            writer.WriteEndElement();
-                            writer.WriteEndElement();
-                            writer.WriteStartElement("attachmentFile");
-                            writer.WriteStartElement("FileName");
-                            writer.WriteString(yipname);
-                            writer.WriteEndElement();
-                            writer.WriteEndElement();
-                            writer.WriteEndElement();
-                            writer.WriteEndElement();
-
-                        }
-
+                        xmlCreator(id, archivePath, xmlname, newType, OrderCompanyID, FirstName, LastName, stickdate, typecode, vsrname, yipname);
 
                         list.Add(newVsrPath);
                         list.Add(newYipPath);
@@ -532,8 +444,7 @@ namespace XmlCreator
 
                         // }
                         rowCounter++;
-                        lblRow.Text = counter.ToString();
-                        System.Windows.Forms.Application.DoEvents();
+                        updateCounters(counter);
                     }
                     catch (Exception ex)
                     {
@@ -544,13 +455,9 @@ namespace XmlCreator
 
                 }
 
-                lblMsg.Visible = true;
-                lblOf.Visible = false;
-                lblRow.Visible = false;
-                label3.Visible = false;
-                label5.Visible = false;
-                lblMsg.Text = "מוחק קבצים";
-                System.Windows.Forms.Application.DoEvents();
+                updateScreen(false);
+                UpdateUI("מוחק קבצים");
+                
                 foreach (var item in dels)
                 {
                     if (File.Exists(item))
@@ -558,51 +465,211 @@ namespace XmlCreator
                         File.Delete(item);
                     }
                 }
+                UpdateUI("מעתיק קבצים לתקיית יעד");
 
-                lblMsg.Text = "מעתיק קבצים לתקיית יעד";
-                System.Windows.Forms.Application.DoEvents();
-                var dest = Path.Combine(txtDest.Text, dirName);
-                Directory.CreateDirectory(dest);
-                string efile = string.Empty; ;
-                try
-                {
-                    foreach (var file in list)
-                    {
-                        efile = Path.GetFileName(file);
-                        if (File.Exists(file) &&  file.Contains("YIP"))
-                        {
-                            using (PdfDocument sourceDoc = new PdfDocument(file))
-                            {
-                                using (PdfDocument newDoc = new PdfDocument())
-                                {
-                                    newDoc.InsertPage(sourceDoc, sourceDoc.Pages.Count - 1);
-                                    newDoc.SaveToFile(Path.Combine(dest, Path.GetFileName(file)));
-                                }
-                            }
-
-                        }
-                        else
-                        {
-                            File.Copy(file, Path.Combine(dest, Path.GetFileName(file)));
-                        }
-
-                    }
-                }
-                catch (Exception ex)
-                {
-                    SimpleLogger.SimpleLog.Log(ex);
-                    SimpleLogger.SimpleLog.Log("נכשל ביצירת קובץ בשם - " + efile);
-                    lblMsgPdfError.Text = "נכשל ביצירת קובץ בשם - " + efile;
-                    System.Windows.Forms.Application.DoEvents();
-
-                }
+                parseList(list, dirName);
                 
+
                 MessageBox.Show("הפעולה הסתיימה בהצלחה. " + rowCounter + " מתוך " + lastRow + " נקלטו ");
             }
             catch (Exception ex)
             {
                 SimpleLogger.SimpleLog.Log(ex);
             }
+        }
+        private void parseList(List<string> list, string dirName)
+        {
+            var dest = Path.Combine(txtDest.Text, dirName);
+            Directory.CreateDirectory(dest);
+            string efile = string.Empty; ;
+            try
+            {
+                foreach (var file in list)
+                {
+                    efile = Path.GetFileName(file);
+                    if (File.Exists(file) && file.Contains("YIP"))
+                    {
+                        using (PdfDocument sourceDoc = new PdfDocument(file))
+                        {
+                            using (PdfDocument newDoc = new PdfDocument())
+                            {
+                                newDoc.InsertPage(sourceDoc, sourceDoc.Pages.Count - 1);
+                                newDoc.SaveToFile(Path.Combine(dest, Path.GetFileName(file)));
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        File.Copy(file, Path.Combine(dest, Path.GetFileName(file)));
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                SimpleLogger.SimpleLog.Log(ex);
+                SimpleLogger.SimpleLog.Log("נכשל ביצירת קובץ בשם - " + efile);
+                lblMsgPdfError.Text = "נכשל ביצירת קובץ בשם - " + efile;
+                System.Windows.Forms.Application.DoEvents();
+
+            }
+        }
+        private void xmlCreator(string id, string archivePath, string xmlname, string newType, 
+            string OrderCompanyID, string FirstName, string LastName, string stickdate, string typecode,
+            string vsrname, string yipname)
+        {
+            id = id.PadLeft(9, '0');
+            var sts = new XmlWriterSettings()
+            {
+                Indent = true
+            };
+
+            using (var writer = XmlWriter.Create(Path.Combine(archivePath, xmlname), sts))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("ActivityData");
+                writer.WriteStartElement("SPDataSetResults");
+                writer.WriteStartElement("SystemID");
+                writer.WriteString("2");
+                writer.WriteEndElement();
+                writer.WriteStartElement("SystemName");
+                writer.WriteString("חברות הביטוח");
+                writer.WriteEndElement();
+                writer.WriteStartElement("CompanyID");
+                writer.WriteString("5");
+                writer.WriteEndElement();
+                writer.WriteStartElement("CompanyName");
+                writer.WriteString("ערן מור");
+                writer.WriteEndElement();
+                writer.WriteStartElement("Interface");
+                writer.WriteString(newType);
+                writer.WriteEndElement();
+                writer.WriteStartElement("ServiceID");
+                writer.WriteString("10");
+                writer.WriteEndElement();
+                writer.WriteStartElement("OrderBtlID");
+                writer.WriteEndElement();
+                writer.WriteStartElement("OrderCompanyID");
+                writer.WriteString(OrderCompanyID);
+                writer.WriteEndElement();
+                writer.WriteStartElement("TimeStamp");
+                writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm"));
+                writer.WriteEndElement();
+                writer.WriteStartElement("Zehut");
+                writer.WriteString(id);
+                writer.WriteEndElement();
+                writer.WriteStartElement("FirstName");
+                writer.WriteString(FirstName);
+                writer.WriteEndElement();
+                writer.WriteStartElement("LastName");
+                writer.WriteString(LastName);
+                writer.WriteEndElement();
+                if (!string.IsNullOrEmpty(stickdate))
+                {
+                    writer.WriteStartElement("TikDate");
+                    writer.WriteString(stickdate);
+                    writer.WriteEndElement();
+                }
+                if (newType == "201")
+                {
+                    writer.WriteStartElement("KodGimla");
+                    writer.WriteEndElement();
+                }
+                else
+                {
+                    writer.WriteStartElement("KodGimla");
+                    writer.WriteString(typecode);
+                    writer.WriteEndElement();
+                }
+                writer.WriteStartElement("vasarDate");
+                writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddT00\\:00\\:00"));
+                writer.WriteEndElement();
+                writer.WriteStartElement("attachmentFile");
+                writer.WriteStartElement("FileName");
+                writer.WriteString(vsrname);
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+                writer.WriteStartElement("attachmentFile");
+                writer.WriteStartElement("FileName");
+                writer.WriteString(yipname);
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+
+            }
+        }
+        private List<ExcelVals> prepareList(List<ExcelVals> lst)
+        {
+            try
+            {
+                var lowList = new List<ExcelVals>();
+                var highList = new List<ExcelVals>();
+                var threshold = dateTimePicker1.Value.ToOADate();
+                foreach (var item in lst)
+                {
+                    if (double.TryParse(item.tickDate, out double value))
+                    {
+                        if (value < threshold)
+                        {
+                            lowList.Add(item);
+                        }
+                        else
+                        {
+                            highList.Add(item);
+                        }
+                    }
+                }
+
+                var query = lowList.GroupBy(x => new { x.clientFile, x.code, x.newType })
+                            .Select(g => g.OrderByDescending(c => c.tickDate))
+                            .ToList();
+
+
+                var fileList = new List<ExcelVals>(highList);
+                foreach (var item in query)
+                {
+                    var ilst = item.ToList();
+                    var gmla = ilst[0].code;
+                    var mll = ilst[0].newType;
+                    if (Gimlas.Contains(gmla) && Malals.Contains(mll))
+                    {
+                        var itm = ilst[0];
+                        ilst = new List<ExcelVals>
+                        {
+                            itm
+                        };
+                    }
+                    fileList.AddRange(ilst);
+                }
+                
+                return fileList;
+            }
+            catch (Exception ex)
+            {
+                SimpleLogger.SimpleLog.Log(ex);
+                return null;
+            }
+        }
+        private void updateCounters(int counter)
+        {
+            lblRow.Text = counter.ToString();
+            System.Windows.Forms.Application.DoEvents();
+        }
+        private void updateScreen(bool isStart)
+        {
+            lblMsg.Visible = !isStart;
+            lblOf.Visible = isStart;
+            lblRow.Visible = isStart;
+            label3.Visible = isStart;
+            label5.Visible = isStart;
+            System.Windows.Forms.Application.DoEvents();
+        }
+        private void UpdateUI(string message)
+        {
+            lblMsg.Text = message;
+            System.Windows.Forms.Application.DoEvents();
         }
         private string CreateName(string companyId, string id, string ext, NameType nameType)
         {
@@ -643,6 +710,12 @@ namespace XmlCreator
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DateMLL = dateTimePicker1.Value;
+            Properties.Settings.Default.Save();
         }
     }
     public class Codes
