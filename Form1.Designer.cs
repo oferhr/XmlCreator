@@ -47,6 +47,9 @@
             this.lblMsgPdfError = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.button2 = new System.Windows.Forms.Button();
+            this.txtWork = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnBrowse
@@ -78,7 +81,7 @@
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(607, 312);
+            this.btnStart.Location = new System.Drawing.Point(607, 341);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(75, 23);
             this.btnStart.TabIndex = 11;
@@ -115,7 +118,7 @@
             // 
             // btnArchive
             // 
-            this.btnArchive.Location = new System.Drawing.Point(579, 128);
+            this.btnArchive.Location = new System.Drawing.Point(579, 157);
             this.btnArchive.Name = "btnArchive";
             this.btnArchive.Size = new System.Drawing.Size(75, 23);
             this.btnArchive.TabIndex = 17;
@@ -125,7 +128,7 @@
             // 
             // txtArchive
             // 
-            this.txtArchive.Location = new System.Drawing.Point(61, 128);
+            this.txtArchive.Location = new System.Drawing.Point(61, 157);
             this.txtArchive.Name = "txtArchive";
             this.txtArchive.Size = new System.Drawing.Size(495, 20);
             this.txtArchive.TabIndex = 16;
@@ -134,7 +137,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label2.Location = new System.Drawing.Point(668, 132);
+            this.label2.Location = new System.Drawing.Point(668, 161);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(89, 19);
             this.label2.TabIndex = 15;
@@ -142,7 +145,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(481, 312);
+            this.button1.Location = new System.Drawing.Point(481, 341);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 18;
@@ -154,7 +157,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label3.Location = new System.Drawing.Point(388, 240);
+            this.label3.Location = new System.Drawing.Point(388, 269);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(117, 16);
             this.label3.TabIndex = 19;
@@ -164,7 +167,7 @@
             // 
             this.lblRow.AutoSize = true;
             this.lblRow.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblRow.Location = new System.Drawing.Point(512, 240);
+            this.lblRow.Location = new System.Drawing.Point(512, 269);
             this.lblRow.Name = "lblRow";
             this.lblRow.Size = new System.Drawing.Size(15, 16);
             this.lblRow.TabIndex = 20;
@@ -174,7 +177,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label5.Location = new System.Drawing.Point(547, 240);
+            this.label5.Location = new System.Drawing.Point(547, 269);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(23, 16);
             this.label5.TabIndex = 21;
@@ -184,7 +187,7 @@
             // 
             this.lblOf.AutoSize = true;
             this.lblOf.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblOf.Location = new System.Drawing.Point(594, 240);
+            this.lblOf.Location = new System.Drawing.Point(594, 269);
             this.lblOf.Name = "lblOf";
             this.lblOf.Size = new System.Drawing.Size(15, 16);
             this.lblOf.TabIndex = 22;
@@ -194,7 +197,7 @@
             // 
             this.lblMsg.AutoSize = true;
             this.lblMsg.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblMsg.Location = new System.Drawing.Point(388, 240);
+            this.lblMsg.Location = new System.Drawing.Point(388, 269);
             this.lblMsg.Name = "lblMsg";
             this.lblMsg.Size = new System.Drawing.Size(0, 16);
             this.lblMsg.TabIndex = 23;
@@ -203,7 +206,7 @@
             // 
             this.lblMsgPdfError.AutoSize = true;
             this.lblMsgPdfError.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.lblMsgPdfError.Location = new System.Drawing.Point(97, 291);
+            this.lblMsgPdfError.Location = new System.Drawing.Point(97, 320);
             this.lblMsgPdfError.Name = "lblMsgPdfError";
             this.lblMsgPdfError.Size = new System.Drawing.Size(0, 16);
             this.lblMsgPdfError.TabIndex = 24;
@@ -212,7 +215,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label4.Location = new System.Drawing.Point(668, 178);
+            this.label4.Location = new System.Drawing.Point(668, 207);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(79, 19);
             this.label4.TabIndex = 25;
@@ -220,17 +223,47 @@
             // 
             // dateTimePicker1
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(356, 176);
+            this.dateTimePicker1.Location = new System.Drawing.Point(356, 205);
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(200, 20);
             this.dateTimePicker1.TabIndex = 26;
             this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(579, 113);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 29;
+            this.button2.Text = "חפש";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // txtWork
+            // 
+            this.txtWork.Location = new System.Drawing.Point(61, 113);
+            this.txtWork.Name = "txtWork";
+            this.txtWork.Size = new System.Drawing.Size(495, 20);
+            this.txtWork.TabIndex = 28;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label6.Location = new System.Drawing.Point(668, 117);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(93, 19);
+            this.label6.TabIndex = 27;
+            this.label6.Text = "תקיית עבודה";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 352);
+            this.ClientSize = new System.Drawing.Size(800, 388);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.txtWork);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.lblMsgPdfError);
@@ -278,6 +311,9 @@
         private System.Windows.Forms.Label lblMsgPdfError;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.TextBox txtWork;
+        private System.Windows.Forms.Label label6;
     }
 }
 

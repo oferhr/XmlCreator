@@ -56,6 +56,11 @@ namespace XmlCreator
             {
                 txtDest.Text = dirtPath;
             }
+            var dirwPath = Properties.Settings.Default.WorkPath;
+            if (!string.IsNullOrEmpty(dirwPath))
+            {
+                txtWork.Text = dirwPath;
+            }
             var diraPath = Properties.Settings.Default.ArchivePath;
             if (!string.IsNullOrEmpty(diraPath))
             {
@@ -162,11 +167,18 @@ namespace XmlCreator
         {
             var dirName = DateTime.Now.ToString("yyyyMMddHHmmss");
             var archivePath = Path.Combine(txtArchive.Text, dirName);
+            Directory.CreateDirectory(archivePath);
+            Directory.Delete(txtWork.Text, true);
+            //Directory.CreateDirectory(txtWork.Text);
             var mainDir = Path.GetDirectoryName(txtMain.Text);
-            var excelPath = Path.Combine(archivePath, Path.GetFileName(txtMain.Text));
-            Directory.Move(mainDir, archivePath);
+            var excelPath = Path.Combine(txtWork.Text, Path.GetFileName(txtMain.Text));
+            CopyDirectory(mainDir, archivePath);
+            Directory.Move(mainDir, txtWork.Text);
             Directory.CreateDirectory(mainDir);
-            ParseExcel(archivePath, excelPath, dirName);
+            ParseExcel(txtWork.Text, excelPath, dirName);
+
+            Directory.Delete(txtWork.Text, true);
+            Directory.CreateDirectory(txtWork.Text);
         }
         private List<ExcelVals> ReadExcel(string excelPath)
         {
@@ -299,7 +311,7 @@ namespace XmlCreator
             }
         }
         
-        private void ParseExcel(string archivePath, string excelPath, string dirName)
+        private void ParseExcel(string workingPath, string excelPath, string dirName)
         {
             var list = new List<string>();
             var dels = new List<string>();
@@ -387,7 +399,7 @@ namespace XmlCreator
                         var newVsrPath = string.Empty;
                         var newYipPath = string.Empty;
 
-                        string[] files = Directory.GetFiles(archivePath);
+                        string[] files = Directory.GetFiles(workingPath);
                         foreach (var file in files)
                         {
                             var nm = Path.GetFileNameWithoutExtension(file);
@@ -405,8 +417,8 @@ namespace XmlCreator
 
                         if (File.Exists(vsrpath) && File.Exists(yippath))
                         {
-                            newVsrPath = Path.Combine(archivePath, vsrname);
-                            newYipPath = Path.Combine(archivePath, yipname);
+                            newVsrPath = Path.Combine(workingPath, vsrname);
+                            newYipPath = Path.Combine(workingPath, yipname);
                             File.Copy(vsrpath, newVsrPath);
                             File.Copy(yippath, newYipPath);
                             //if (XmlCounter == 2)
@@ -435,11 +447,11 @@ namespace XmlCreator
                         }
 
 
-                        xmlCreator(id, archivePath, xmlname, newType, OrderCompanyID, FirstName, LastName, stickdate, typecode, vsrname, yipname);
+                        xmlCreator(id, workingPath, xmlname, newType, OrderCompanyID, FirstName, LastName, stickdate, typecode, vsrname, yipname);
 
                         list.Add(newVsrPath);
                         list.Add(newYipPath);
-                        list.Add(Path.Combine(archivePath, xmlname));
+                        list.Add(Path.Combine(workingPath, xmlname));
 
 
                         // }
@@ -481,7 +493,7 @@ namespace XmlCreator
         {
             var dest = Path.Combine(txtDest.Text, dirName);
             Directory.CreateDirectory(dest);
-            string efile = string.Empty; ;
+            string efile = string.Empty;
             try
             {
                 foreach (var file in list)
@@ -515,7 +527,7 @@ namespace XmlCreator
 
             }
         }
-        private void xmlCreator(string id, string archivePath, string xmlname, string newType, 
+        private void xmlCreator(string id, string workingPath, string xmlname, string newType, 
             string OrderCompanyID, string FirstName, string LastName, string stickdate, string typecode,
             string vsrname, string yipname)
         {
@@ -525,7 +537,7 @@ namespace XmlCreator
                 Indent = true
             };
 
-            using (var writer = XmlWriter.Create(Path.Combine(archivePath, xmlname), sts))
+            using (var writer = XmlWriter.Create(Path.Combine(workingPath, xmlname), sts))
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("ActivityData");
@@ -652,6 +664,28 @@ namespace XmlCreator
                 return null;
             }
         }
+        static void CopyDirectory(string sourceDir, string destDir)
+        {
+            // Get the subdirectories in the source directory
+            string[] subDirectories = Directory.GetDirectories(sourceDir);
+
+            // Copy files in the current directory
+            string[] files = Directory.GetFiles(sourceDir);
+            foreach (string file in files)
+            {
+                string fileName = Path.GetFileName(file);
+                string destFile = Path.Combine(destDir, fileName);
+                File.Copy(file, destFile, true); // Set overwrite to true to overwrite existing files
+            }
+
+            // Recursively copy subdirectories
+            foreach (string subDir in subDirectories)
+            {
+                string dirName = Path.GetFileName(subDir);
+                string destSubDir = Path.Combine(destDir, dirName);
+                CopyDirectory(subDir, destSubDir);
+            }
+        }
         private void updateCounters(int counter)
         {
             lblRow.Text = counter.ToString();
@@ -716,6 +750,21 @@ namespace XmlCreator
         {
             Properties.Settings.Default.DateMLL = dateTimePicker1.Value;
             Properties.Settings.Default.Save();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    txtWork.Text = fbd.SelectedPath;
+                    Properties.Settings.Default.WorkPath = fbd.SelectedPath;
+                    Properties.Settings.Default.Save();
+                }
+            }
         }
     }
     public class Codes
