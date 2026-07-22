@@ -212,6 +212,9 @@ namespace XmlCreator
                     var tickDate = xlWorksheet.Range["F" + i, "F" + i].Value2?.ToString();
                     var code = xlWorksheet.Range["G" + i, "G" + i].Value2?.ToString();
                     var newType = xlWorksheet.Range["H" + i, "H" + i].Value2?.ToString();
+                    var clientType = xlWorksheet.Range["I" + i, "I" + i].Value2?.ToString();
+                    var clientCode = xlWorksheet.Range["J" + i, "J" + i].Value2?.ToString();
+                    var clientName = xlWorksheet.Range["K" + i, "K" + i].Value2?.ToString();
 
 
                     lst.Add(new ExcelVals
@@ -225,6 +228,9 @@ namespace XmlCreator
                         tickDate = tickDate,
                         code = code,
                         newType = newType,
+                        clientType = clientType,
+                        clientCode = clientCode,
+                        clientName = clientName,
                         line = i
                     });
                 }
@@ -366,6 +372,9 @@ namespace XmlCreator
                         var newType = it.newType;
                         var FirstName = it.FirstName;
                         var LastName = it.LastName;
+                        var clientType = it.clientType;
+                        var clientCode = it.clientCode;
+                        var clientName = it.clientName;
 
 
                         vsrname = CreateName(OrderCompanyID, id, "pdf", NameType.PDF_VSR);
@@ -383,10 +392,20 @@ namespace XmlCreator
                             {
                                 stickdate = "1900-01-01T00:00:00";
                             }
+                            else if (double.TryParse(tickDate, out double dblTd))
+                            {
+                                // Numeric Excel serial (OADate) coming from a date-typed cell.
+                                stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+                            }
+                            else if (DateTime.TryParse(tickDate, out DateTime dtTd))
+                            {
+                                // Text date such as "2021-01-01" - keep the date and append the time.
+                                stickdate = dtTd.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+                            }
                             else
                             {
-                                var dblTd = double.Parse(tickDate);
-                                stickdate = DateTime.FromOADate(dblTd).ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm");
+                                // Unrecognized format - pass through as-is rather than throwing.
+                                stickdate = tickDate;
                             }
 
                         }
@@ -447,7 +466,7 @@ namespace XmlCreator
                         }
 
 
-                        xmlCreator(id, workingPath, xmlname, newType, OrderCompanyID, FirstName, LastName, stickdate, typecode, vsrname, yipname);
+                        xmlCreator(id, workingPath, xmlname, newType, OrderCompanyID, FirstName, LastName, stickdate, typecode, vsrname, yipname, clientType, clientCode, clientName);
 
                         list.Add(newVsrPath);
                         list.Add(newYipPath);
@@ -527,9 +546,9 @@ namespace XmlCreator
 
             }
         }
-        private void xmlCreator(string id, string workingPath, string xmlname, string newType, 
+        private void xmlCreator(string id, string workingPath, string xmlname, string newType,
             string OrderCompanyID, string FirstName, string LastName, string stickdate, string typecode,
-            string vsrname, string yipname)
+            string vsrname, string yipname, string clientType, string clientCode, string clientName)
         {
             id = id.PadLeft(9, '0');
             var sts = new XmlWriterSettings()
@@ -566,7 +585,7 @@ namespace XmlCreator
                 writer.WriteString(OrderCompanyID);
                 writer.WriteEndElement();
                 writer.WriteStartElement("TimeStamp");
-                writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.mmm"));
+                writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss"));
                 writer.WriteEndElement();
                 writer.WriteStartElement("Zehut");
                 writer.WriteString(id);
@@ -583,6 +602,8 @@ namespace XmlCreator
                     writer.WriteString(stickdate);
                     writer.WriteEndElement();
                 }
+                writer.WriteStartElement("RetrieveDocDate");
+                writer.WriteEndElement();
                 if (newType == "201")
                 {
                     writer.WriteStartElement("KodGimla");
@@ -596,6 +617,15 @@ namespace XmlCreator
                 }
                 writer.WriteStartElement("vasarDate");
                 writer.WriteString(DateTime.Now.ToString("yyyy-MM-ddT00\\:00\\:00"));
+                writer.WriteEndElement();
+                writer.WriteStartElement("DataRequesterTypeID");
+                writer.WriteString(clientType);
+                writer.WriteEndElement();
+                writer.WriteStartElement("DataRequesterKey");
+                writer.WriteString(clientCode);
+                writer.WriteEndElement();
+                writer.WriteStartElement("DataRequesterName");
+                writer.WriteString(clientName);
                 writer.WriteEndElement();
                 writer.WriteStartElement("attachmentFile");
                 writer.WriteStartElement("FileName");
@@ -618,24 +648,29 @@ namespace XmlCreator
             {
                 var lowList = new List<ExcelVals>();
                 var highList = new List<ExcelVals>();
-                var threshold = dateTimePicker1.Value.ToOADate();
+                // Strip the time-of-day so the picked day is a clean midnight boundary;
+                // Excel tick dates are whole-day serials and otherwise the boundary day
+                // would be misclassified as "before".
+                var threshold = dateTimePicker1.Value.Date.ToOADate();
                 foreach (var item in lst)
                 {
-                    if (double.TryParse(item.tickDate, out double value))
+                    // Rows whose tickDate is empty, "1900..." or any text format do not
+                    // parse as a numeric OADate. Treat them as pre-threshold so they
+                    // remain in the de-dup pool instead of being silently dropped
+                    // (which was the regression introduced with the MLL Date filter).
+                    if (double.TryParse(item.tickDate, out double value) && value >= threshold)
                     {
-                        if (value < threshold)
-                        {
-                            lowList.Add(item);
-                        }
-                        else
-                        {
-                            highList.Add(item);
-                        }
+                        highList.Add(item);
+                    }
+                    else
+                    {
+                        lowList.Add(item);
                     }
                 }
 
                 var query = lowList.GroupBy(x => new { x.clientFile, x.code, x.newType })
-                            .Select(g => g.OrderByDescending(c => c.tickDate))
+                            .Select(g => g.OrderByDescending(c =>
+                                double.TryParse(c.tickDate, out double v) ? v : double.MinValue))
                             .ToList();
 
 
@@ -783,6 +818,9 @@ namespace XmlCreator
         public string tickDate { get; set; }
         public string code { get; set; }
         public string newType { get; set; }
+        public string clientType { get; set; }
+        public string clientCode { get; set; }
+        public string clientName { get; set; }
         public int line { get; set; }
     }
 }
