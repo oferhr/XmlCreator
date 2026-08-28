@@ -282,7 +282,7 @@ namespace XmlCreator
                 xlWorkbook = xlApp.Workbooks.Open(excelPath);
                 xlApp.Visible = false;
                 xlWorksheet = (Excel._Worksheet)xlWorkbook.Sheets[1];
-                xlWorksheet.Range["I" + line, "I" + line].Value = msg;
+                xlWorksheet.Range["L" + line, "L" + line].Value = msg;
 
                 xlWorkbook.Save();
                 xlWorkbook.Close();
