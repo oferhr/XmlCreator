@@ -177,8 +177,28 @@ namespace XmlCreator
             Directory.CreateDirectory(mainDir);
             ParseExcel(txtWork.Text, excelPath, dirName);
 
+            //ParseExcel writes the row errors into the working copy of the excel file,
+            //and the working folder is deleted right below - keep the annotated file in the archive
+            SaveExcelToArchive(excelPath, archivePath);
+
             Directory.Delete(txtWork.Text, true);
             Directory.CreateDirectory(txtWork.Text);
+        }
+        private void SaveExcelToArchive(string excelPath, string archivePath)
+        {
+            try
+            {
+                if (!File.Exists(excelPath))
+                {
+                    return;
+                }
+                Directory.CreateDirectory(archivePath);
+                File.Copy(excelPath, Path.Combine(archivePath, Path.GetFileName(excelPath)), true);
+            }
+            catch (Exception ex)
+            {
+                SimpleLogger.SimpleLog.Log(ex);
+            }
         }
         private List<ExcelVals> ReadExcel(string excelPath)
         {
@@ -274,19 +294,27 @@ namespace XmlCreator
         }
         private void SetExcelError(int line, string msg, string excelPath)
         {
+            if (line <= 0)
+            {
+                return;
+            }
             var xlApp = new Excel.Application();
             Excel.Workbook xlWorkbook = null;
             Excel._Worksheet xlWorksheet = null;
             try
             {
-                xlWorkbook = xlApp.Workbooks.Open(excelPath);
                 xlApp.Visible = false;
+                xlApp.DisplayAlerts = false;
+                xlWorkbook = xlApp.Workbooks.Open(excelPath);
                 xlWorksheet = (Excel._Worksheet)xlWorkbook.Sheets[1];
                 xlWorksheet.Range["L" + line, "L" + line].Value = msg;
 
                 xlWorkbook.Save();
-                xlWorkbook.Close();
-                xlApp.Quit();
+            }
+            catch (Exception ex)
+            {
+                //a failed error report must not stop the remaining rows from being processed
+                SimpleLogger.SimpleLog.Log(ex);
             }
             finally
             {
@@ -302,16 +330,16 @@ namespace XmlCreator
                     Marshal.ReleaseComObject(xlWorksheet);
 
                 //close and release
-                if (xlWorksheet != null)
+                if (xlWorkbook != null)
                 {
-                    
+                    xlWorkbook.Close(false);
                     Marshal.ReleaseComObject(xlWorkbook);
                 }
 
                 if (xlApp != null)
                 {
                     //quit and release
-                    
+                    xlApp.Quit();
                     Marshal.ReleaseComObject(xlApp);
                 }
             }
